@@ -18,6 +18,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from .utils import email_verification_token
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class RegisterUserView(APIView):
@@ -279,3 +280,14 @@ class RecordCRUDView(APIView):
         return Response({"message": "Record deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 
+class LogoutView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        try:
+            refresh_token = request.data.get('refresh')
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({"message": "Successfully logged out"}, status=200)
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
