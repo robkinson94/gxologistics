@@ -13,17 +13,18 @@ class Team(models.Model):
 
 class Metric(models.Model):
     name = models.CharField(max_length=255)
-    value = models.FloatField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    description = models.TextField()  # Ensure this matches the list_display field
+    target = models.FloatField()  # Ensure this matches the list_display field
 
     def __str__(self):
         return self.name
 
 class Record(models.Model):
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='records')
-    metric = models.ForeignKey(Metric, on_delete=models.CASCADE, related_name='records')
+    metric = models.ForeignKey(Metric, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
     value = models.FloatField()
-    timestamp = models.DateTimeField()
+    recorded_at = models.DateTimeField(null=True)  # When the data was generated
+    timestamp = models.DateTimeField(auto_now_add=True, null=True)  # When the record was added
 
     def __str__(self):
         return f"{self.metric.name} - {self.value}"

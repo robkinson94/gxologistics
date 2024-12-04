@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser
+from .models import CustomUser, Metric, Record
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
@@ -31,3 +31,16 @@ class CustomUserAdmin(UserAdmin):
 
     # Search fields
     search_fields = ('username', 'email')
+    
+@admin.register(Metric)
+class MetricAdmin(admin.ModelAdmin):
+    # Ensure fields in list_display exist in the Metric model
+    list_display = ('id', 'name', 'description', 'target')  # Update to match your Metric model fields
+    search_fields = ('name',)
+    list_filter = ('name',)
+
+@admin.register(Record)
+class RecordAdmin(admin.ModelAdmin):
+    list_display = ('id', 'metric', 'team', 'value', 'recorded_at', 'timestamp')
+    search_fields = ('metric__name', 'team__name')
+    list_filter = ('metric', 'team', 'recorded_at')

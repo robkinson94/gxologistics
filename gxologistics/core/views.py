@@ -169,15 +169,113 @@ class TeamCRUDView(APIView):
 
         team.delete()
         return Response({"message": "Team deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+    
+
+class MetricCRUDView(APIView):
+
+    def get_permissions(self):
+        """
+        Dynamically assign permissions based on request method.
+        """
+        if self.request.method in ['POST', 'PUT', 'DELETE']:
+            self.permission_classes = [IsAuthenticated, IsCustomAdminUser]
+        elif self.request.method == 'GET':
+            self.permission_classes = [IsAuthenticated]
+        return super().get_permissions()
+
+    def post(self, request):
+        """
+        Create a new metric.
+        """
+        serializer = MetricSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, pk=None):
+        """
+        Retrieve a metric or list all metrics.
+        """
+        if pk:
+            metric = get_object_or_404(Metric, pk=pk)
+            serializer = MetricSerializer(metric)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        metrics = Metric.objects.all()
+        serializer = MetricSerializer(metrics, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk):
+        """
+        Update an existing metric.
+        """
+        metric = get_object_or_404(Metric, pk=pk)
+        serializer = MetricSerializer(metric, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        """
+        Delete a metric.
+        """
+        metric = get_object_or_404(Metric, pk=pk)
+        metric.delete()
+        return Response({"message": "Metric deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 
-class MetricViewSet(viewsets.ModelViewSet):
-    queryset = Metric.objects.all()
-    serializer_class = MetricSerializer
-    permission_classes = [IsAuthenticated]
+class RecordCRUDView(APIView):
 
-class RecordViewSet(viewsets.ModelViewSet):
-    queryset = Record.objects.all()
-    serializer_class = RecordSerializer
-    permission_classes = [IsAuthenticated]
+    def get_permissions(self):
+        """
+        Dynamically assign permissions based on request method.
+        """
+        if self.request.method in ['POST', 'PUT', 'DELETE']:
+            self.permission_classes = [IsAuthenticated, IsCustomAdminUser]
+        elif self.request.method == 'GET':
+            self.permission_classes = [IsAuthenticated]
+        return super().get_permissions()
+
+    def post(self, request):
+        """
+        Create a new record.
+        """
+        serializer = RecordSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, pk=None):
+        """
+        Retrieve a record or list all records.
+        """
+        if pk:
+            record = get_object_or_404(Record, pk=pk)
+            serializer = RecordSerializer(record)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        records = Record.objects.all()
+        serializer = RecordSerializer(records, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk):
+        """
+        Update an existing record.
+        """
+        record = get_object_or_404(Record, pk=pk)
+        serializer = RecordSerializer(record, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        """
+        Delete a record.
+        """
+        record = get_object_or_404(Record, pk=pk)
+        record.delete()
+        return Response({"message": "Record deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
 
