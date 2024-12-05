@@ -19,6 +19,9 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from .utils import email_verification_token
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.utils.timezone import now
+from django.db.models import Sum, Count
+from datetime import timedelta
 
 
 class RegisterUserView(APIView):
@@ -116,7 +119,6 @@ class TeamCRUDView(APIView):
         elif self.request.method == 'GET':
             self.permission_classes = [IsAuthenticated]
         return super().get_permissions()
-
 
 
     def post(self, request):
@@ -249,15 +251,21 @@ class RecordCRUDView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, pk=None):
-        """
-        Retrieve a record or list all records.
-        """
         if pk:
             record = get_object_or_404(Record, pk=pk)
             serializer = RecordSerializer(record)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        records = Record.objects.all()
-        serializer = RecordSerializer(records, many=True)
+
+        queryset = Record.objects.all()
+        team_id = request.query_params.get('team')
+        metric_id = request.query_params.get('metric')
+
+        if team_id:
+            queryset = queryset.filter(team__id=team_id)
+        if metric_id:
+            queryset = queryset.filter(metric__id=metric_id)
+
+        serializer = RecordSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
@@ -291,3 +299,38 @@ class LogoutView(APIView):
             return Response({"message": "Successfully logged out"}, status=200)
         except Exception as e:
             return Response({"error": str(e)}, status=400)
+        
+class SummaryView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        # Stacked bar chart data
+        metric_team_data = (
+            Record.objects.values("metric__name", "team__name")
+            .annotate(total_value=Sum("value"))
+        )
+
+        # Pie chart: Proportion of records by team
+        records_by_team = (
+            Record.objects.values("team__name")
+            .annotate(total_records=Count("id"))
+        )
+
+        # Line chart: Trends over time
+        record_trends = (
+            Record.objects.values("timestamp")
+            .annotate(total_value=Sum("value"))
+            .order_by("timestamp")
+        )
+
+        # Area chart: Total contributions by team
+        team_contributions = (
+            Record.objects.values("team__name")
+            .annotate(total_value=Sum("value"))
+        )
+
+        return Response({
+            "metricTeamData": list(metric_team_data),
+            "recordsByTeam": list(records_by_team),
+            "recordTrends": list(record_trends),
+            "teamContributions": list(team_contributions),
+        })

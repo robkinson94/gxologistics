@@ -19,6 +19,10 @@ class MetricSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class RecordSerializer(serializers.ModelSerializer):
+    metric_name = serializers.CharField(source="metric.name", read_only=True)
+    metric_target = serializers.FloatField(source="metric.target", read_only=True)
+    team_name = serializers.CharField(source="team.name", read_only=True)
+    
     class Meta:
         model = Record
         fields = '__all__'

@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import TeamCRUDView, MetricCRUDView, RecordCRUDView, RegisterUserView, VerifyEmailView
+from .views import TeamCRUDView, MetricCRUDView, RecordCRUDView, RegisterUserView, VerifyEmailView, SummaryView
 
 
 urlpatterns = [
@@ -11,4 +11,5 @@ urlpatterns = [
     path('records/', RecordCRUDView.as_view(), name='record-list-create'),
     path('records/<int:pk>/', RecordCRUDView.as_view(), name='record-detail-update-delete'),
     path('verify-email/', VerifyEmailView.as_view(), name='email-verify'),
+    path('summary/', SummaryView.as_view(), name='summary'),
 ]
