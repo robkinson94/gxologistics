@@ -16,8 +16,8 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS')
-CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS')
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="").split(",")
+CORS_ALLOWED_ORIGINS = config("CORS_ALLOWED_ORIGINS", default="").split(",")
 
 # React Domain and Paths
 REACT_DOMAIN = config("REACT_DOMAIN")
