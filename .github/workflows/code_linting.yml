@@ -40,12 +40,17 @@ jobs:
           black gxologistics
           isort gxologistics
 
-      # Step 6: Commit changes if auto-fixes are applied
+      # Step 6: Pull latest changes before committing
+      - name: Pull latest changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase
+
+      # Step 7: Commit changes if auto-fixes are applied
       - name: Commit linting fixes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "Apply linting fixes with black and isort"
-          commit_user_name: "github-actions[bot]"
-          commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
