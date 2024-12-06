@@ -74,11 +74,15 @@ class RegisterUserView(APIView):
 
         # Generate email verification token
         token = email_verification_token.make_token(user)
-        react_domain = settings.REACT_DOMAIN
-        verification_link = (
-            f"{react_domain}{settings.REACT_VERIFY_PATH}?token={token}&uid={user.id}"
-        )
-
+        
+        # Fetch React domain and paths from environment variables
+        react_domain = os.environ.get("REACT_DOMAIN", "http://localhost:3000")
+        react_verify_path = os.environ.get("REACT_VERIFY_PATH", "/verify")
+        react_redirect_path = os.environ.get("REACT_REDIRECT_PATH", "/redirect")
+        
+        # Create verification link
+        verification_link = f"{react_domain}{react_verify_path}?token={token}&uid={user.id}"
+        
         # Send email
         send_mail(
             subject="Verify Your Email",
@@ -86,10 +90,9 @@ class RegisterUserView(APIView):
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[email],
         )
-
-        react_redirect_url = (
-            f"{react_domain}{settings.REACT_REDIRECT_PATH}?token={token}&uid={user.id}"
-        )
+        
+        # Generate redirect URL for JSON response
+        react_redirect_url = f"{react_domain}{react_redirect_path}?token={token}&uid={user.id}"
         return JsonResponse(
             {"redirect_url": react_redirect_url}, status=status.HTTP_201_CREATED
         )
