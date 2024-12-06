@@ -1,31 +1,27 @@
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
-from .models import Team, Metric, Record
-from .serializers import TeamSerializer, MetricSerializer, RecordSerializer
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
-from django.contrib.auth.password_validation import validate_password
-from rest_framework import status
-from django.core.exceptions import ValidationError as DjangoValidationError
-from .models import Team
-from .serializers import TeamSerializer
-from rest_framework.permissions import BasePermission
-from .models import CustomUser
-from django.core.mail import send_mail
-from django.conf import settings
-from django.shortcuts import get_object_or_404
-from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse
-from .utils import email_verification_token
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.utils.timezone import now
-from django.db.models import Sum, Count
 from datetime import timedelta
-from django.http import JsonResponse
-from django.db import IntegrityError
+
 from decouple import config
 from django.conf import settings
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.mail import send_mail
+from django.db import IntegrityError
+from django.db.models import Count, Sum
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.urls import reverse
+from django.utils.timezone import now
+from rest_framework import status, viewsets
+from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from .models import CustomUser, Metric, Record, Team
+from .serializers import MetricSerializer, RecordSerializer, TeamSerializer
+from .utils import email_verification_token
 
 
 class RegisterUserView(APIView):
@@ -34,10 +30,10 @@ class RegisterUserView(APIView):
         Handles user registration with detailed 400 error on password validation failure.
         """
         data = request.data
-        username = data.get('username')
-        email = data.get('email')
-        password = data.get('password')
-        confirm_password = data.get('confirm_password')
+        username = data.get("username")
+        email = data.get("email")
+        password = data.get("password")
+        confirm_password = data.get("confirm_password")
 
         # Validate passwords match
         if password != confirm_password:
@@ -51,7 +47,9 @@ class RegisterUserView(APIView):
             validate_password(password)
         except DjangoValidationError as e:
             # Format the error messages and return a 400 response
-            return Response({"password": e.messages}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"password": e.messages}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         # Check if username or email is already taken
         if CustomUser.objects.filter(username=username).exists():
@@ -77,7 +75,9 @@ class RegisterUserView(APIView):
         # Generate email verification token
         token = email_verification_token.make_token(user)
         react_domain = settings.REACT_DOMAIN
-        verification_link = f"{react_domain}{settings.REACT_VERIFY_PATH}?token={token}&uid={user.id}"
+        verification_link = (
+            f"{react_domain}{settings.REACT_VERIFY_PATH}?token={token}&uid={user.id}"
+        )
 
         # Send email
         send_mail(
@@ -85,15 +85,20 @@ class RegisterUserView(APIView):
             message=f"Click the link to verify your email: {verification_link}",
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[email],
-)
+        )
 
-        react_redirect_url = f"{react_domain}{settings.REACT_REDIRECT_PATH}?token={token}&uid={user.id}"
-        return JsonResponse({"redirect_url": react_redirect_url}, status=status.HTTP_201_CREATED)
-    
+        react_redirect_url = (
+            f"{react_domain}{settings.REACT_REDIRECT_PATH}?token={token}&uid={user.id}"
+        )
+        return JsonResponse(
+            {"redirect_url": react_redirect_url}, status=status.HTTP_201_CREATED
+        )
+
+
 class VerifyEmailView(APIView):
     def post(self, request):
-        token = request.data.get('token')
-        uid = request.data.get('uid')
+        token = request.data.get("token")
+        uid = request.data.get("uid")
 
         user = get_object_or_404(CustomUser, id=uid)
 
@@ -101,10 +106,14 @@ class VerifyEmailView(APIView):
         if email_verification_token.check_token(user, token):
             user.is_active = True
             user.save()
-            return Response({"message": "Email verified successfully!"}, status=status.HTTP_200_OK)
+            return Response(
+                {"message": "Email verified successfully!"}, status=status.HTTP_200_OK
+            )
         else:
-            return Response({"error": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response(
+                {"error": "Invalid or expired token."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class IsCustomAdminUser(BasePermission):
@@ -112,19 +121,19 @@ class IsCustomAdminUser(BasePermission):
     Allows access only to users with is_admin=True.
     Superusers will not bypass this check.
     """
+
     def has_permission(self, request, view):
         return request.user and request.user.is_authenticated and request.user.is_admin
-    
+
 
 class TeamCRUDView(APIView):
 
     def get_permissions(self):
-        if self.request.method in ['POST', 'PUT', 'DELETE']:
+        if self.request.method in ["POST", "PUT", "DELETE"]:
             self.permission_classes = [IsAuthenticated, IsCustomAdminUser]
-        elif self.request.method == 'GET':
+        elif self.request.method == "GET":
             self.permission_classes = [IsAuthenticated]
         return super().get_permissions()
-
 
     def post(self, request):
         """
@@ -147,7 +156,9 @@ class TeamCRUDView(APIView):
             try:
                 team = Team.objects.get(pk=pk)
             except Team.DoesNotExist:
-                return Response({"error": "Team not found"}, status=status.HTTP_404_NOT_FOUND)
+                return Response(
+                    {"error": "Team not found"}, status=status.HTTP_404_NOT_FOUND
+                )
             serializer = TeamSerializer(team)
             return Response(serializer.data, status=status.HTTP_200_OK)
         teams = Team.objects.all()
@@ -161,7 +172,9 @@ class TeamCRUDView(APIView):
         try:
             team = Team.objects.get(pk=pk)
         except Team.DoesNotExist:
-            return Response({"error": "Team not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Team not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         serializer = TeamSerializer(team, data=request.data, partial=True)
         if serializer.is_valid():
@@ -176,11 +189,15 @@ class TeamCRUDView(APIView):
         try:
             team = Team.objects.get(pk=pk)
         except Team.DoesNotExist:
-            return Response({"error": "Team not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Team not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         team.delete()
-        return Response({"message": "Team deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
-    
+        return Response(
+            {"message": "Team deleted successfully"}, status=status.HTTP_204_NO_CONTENT
+        )
+
 
 class MetricCRUDView(APIView):
 
@@ -188,9 +205,9 @@ class MetricCRUDView(APIView):
         """
         Dynamically assign permissions based on request method.
         """
-        if self.request.method in ['POST', 'PUT', 'DELETE']:
+        if self.request.method in ["POST", "PUT", "DELETE"]:
             self.permission_classes = [IsAuthenticated, IsCustomAdminUser]
-        elif self.request.method == 'GET':
+        elif self.request.method == "GET":
             self.permission_classes = [IsAuthenticated]
         return super().get_permissions()
 
@@ -204,7 +221,9 @@ class MetricCRUDView(APIView):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             except IntegrityError:
-                    raise ValidationError({"name": "A metric with this name already exists."})
+                raise ValidationError(
+                    {"name": "A metric with this name already exists."}
+                )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, pk=None):
@@ -236,7 +255,10 @@ class MetricCRUDView(APIView):
         """
         metric = get_object_or_404(Metric, pk=pk)
         metric.delete()
-        return Response({"message": "Metric deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {"message": "Metric deleted successfully"},
+            status=status.HTTP_204_NO_CONTENT,
+        )
 
 
 class RecordCRUDView(APIView):
@@ -245,9 +267,9 @@ class RecordCRUDView(APIView):
         """
         Dynamically assign permissions based on request method.
         """
-        if self.request.method in ['POST', 'PUT', 'DELETE']:
+        if self.request.method in ["POST", "PUT", "DELETE"]:
             self.permission_classes = [IsAuthenticated, IsCustomAdminUser]
-        elif self.request.method == 'GET':
+        elif self.request.method == "GET":
             self.permission_classes = [IsAuthenticated]
         return super().get_permissions()
 
@@ -268,8 +290,8 @@ class RecordCRUDView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         queryset = Record.objects.all()
-        team_id = request.query_params.get('team')
-        metric_id = request.query_params.get('metric')
+        team_id = request.query_params.get("team")
+        metric_id = request.query_params.get("metric")
 
         if team_id:
             queryset = queryset.filter(team__id=team_id)
@@ -296,7 +318,10 @@ class RecordCRUDView(APIView):
         """
         record = get_object_or_404(Record, pk=pk)
         record.delete()
-        return Response({"message": "Record deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {"message": "Record deleted successfully"},
+            status=status.HTTP_204_NO_CONTENT,
+        )
 
 
 class LogoutView(APIView):
@@ -304,26 +329,26 @@ class LogoutView(APIView):
 
     def post(self, request):
         try:
-            refresh_token = request.data.get('refresh')
+            refresh_token = request.data.get("refresh")
             token = RefreshToken(refresh_token)
             token.blacklist()
             return Response({"message": "Successfully logged out"}, status=200)
         except Exception as e:
             return Response({"error": str(e)}, status=400)
-        
+
+
 class SummaryView(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
         # Stacked bar chart data
-        metric_team_data = (
-            Record.objects.values("metric__name", "team__name")
-            .annotate(total_value=Sum("value"))
+        metric_team_data = Record.objects.values("metric__name", "team__name").annotate(
+            total_value=Sum("value")
         )
 
         # Pie chart: Proportion of records by team
-        records_by_team = (
-            Record.objects.values("team__name")
-            .annotate(total_records=Count("id"))
+        records_by_team = Record.objects.values("team__name").annotate(
+            total_records=Count("id")
         )
 
         # Line chart: Trends over time
@@ -334,14 +359,15 @@ class SummaryView(APIView):
         )
 
         # Area chart: Total contributions by team
-        team_contributions = (
-            Record.objects.values("team__name")
-            .annotate(total_value=Sum("value"))
+        team_contributions = Record.objects.values("team__name").annotate(
+            total_value=Sum("value")
         )
 
-        return Response({
-            "metricTeamData": list(metric_team_data),
-            "recordsByTeam": list(records_by_team),
-            "recordTrends": list(record_trends),
-            "teamContributions": list(team_contributions),
-        })
+        return Response(
+            {
+                "metricTeamData": list(metric_team_data),
+                "recordsByTeam": list(records_by_team),
+                "recordTrends": list(record_trends),
+                "teamContributions": list(team_contributions),
+            }
+        )
