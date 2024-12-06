@@ -25,6 +25,7 @@ jobs:
 
       # Step 3: Install dependencies
       - name: Install dependencies
+        working-directory: gxologistics
         env:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           DEBUG: ${{ secrets.DEBUG }}
@@ -40,6 +41,7 @@ jobs:
 
       # Step 4: Apply migrations
       - name: Run migrations
+        working-directory: gxologistics
         env:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           DEBUG: ${{ secrets.DEBUG }}
@@ -55,6 +57,7 @@ jobs:
 
       # Step 5: Run tests
       - name: Run tests
+        working-directory: gxologistics
         env:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           DEBUG: ${{ secrets.DEBUG }}
@@ -65,7 +68,6 @@ jobs:
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_PORT: ${{ secrets.DB_PORT }}
         run: python manage.py test
-
 
   docker:
     runs-on: ubuntu-latest
@@ -85,9 +87,10 @@ jobs:
 
       # Step 3: Build and push Docker image
       - name: Build and push Docker image
+        working-directory: gxologistics
         uses: docker/build-push-action@v4
         with:
-          context: gxologistics
-          file: gxologistics/Dockerfile
+          context: .
+          file: Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/gxologistics:latest
