@@ -8,4 +8,4 @@ python-decouple==3.8
 sqlparse==0.5.2
 gunicorn
 whitenoise
-setuptools==65.5.1
+setuptools==75.6.0
