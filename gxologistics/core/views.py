@@ -25,6 +25,7 @@ from datetime import timedelta
 from django.http import JsonResponse
 from django.db import IntegrityError
 from decouple import config
+from django.conf import settings
 
 
 class RegisterUserView(APIView):
@@ -75,8 +76,8 @@ class RegisterUserView(APIView):
 
         # Generate email verification token
         token = email_verification_token.make_token(user)
-        react_domain = "https://gxologisticsfrontend.onrender.com"  # Use environment variables for production
-        verification_link = f"{react_domain}/email-verify?token={token}&uid={user.id}"
+        react_domain = settings.REACT_DOMAIN
+        verification_link = f"{react_domain}{settings.REACT_VERIFY_PATH}?token={token}&uid={user.id}"
 
         # Send email
         send_mail(
@@ -86,7 +87,7 @@ class RegisterUserView(APIView):
             recipient_list=[email],
 )
 
-        react_redirect_url = f"https://gxologisticsfrontend.onrender.com/api/email-verify?token={token}&uid={user.id}"
+        react_redirect_url = f"{react_domain}{settings.REACT_REDIRECT_PATH}?token={token}&uid={user.id}"
         return JsonResponse({"redirect_url": react_redirect_url}, status=status.HTTP_201_CREATED)
     
 class VerifyEmailView(APIView):
