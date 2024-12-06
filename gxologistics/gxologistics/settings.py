@@ -24,7 +24,7 @@ REACT_DOMAIN = config("REACT_DOMAIN")
 REACT_VERIFY_PATH = config("REACT_VERIFY_PATH")
 REACT_REDIRECT_PATH = config("REACT_REDIRECT_PATH")
 
-
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Application definition
 
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
