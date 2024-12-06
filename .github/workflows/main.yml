@@ -43,7 +43,7 @@ jobs:
           EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
           EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
           EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
-        working-directory: gxologistics
+        working-directory: .
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
@@ -68,7 +68,7 @@ jobs:
           EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
           EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
           EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
-        working-directory: gxologistics
+        working-directory: .
         run: python manage.py test
 
   docker:
@@ -91,6 +91,6 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
-          context: gxologistics
+          context: .
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/gxologistics:latest
