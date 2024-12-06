@@ -1,4 +1,4 @@
-name: Code Linting
+name: Linting and Formatting
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  lint:
+  linting:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,11 +23,29 @@ jobs:
         with:
           python-version: "3.10"
 
-      # Step 3: Install linting tools
-      - name: Install flake8
-        run: pip install flake8
+      # Step 3: Install linters and formatters
+      - name: Install linting tools
+        run: |
+          pip install flake8 black isort
 
-      # Step 4: Run flake8
-      - name: Run Python linter
-        working-directory: gxologistics
-        run: flake8 .
+      # Step 4: Run flake8 for linting diagnostics
+      - name: Run flake8
+        run: |
+          flake8 gxologistics --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 gxologistics --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
+
+      # Step 5: Auto-fix formatting issues with black and isort
+      - name: Auto-fix with black and isort
+        run: |
+          black gxologistics
+          isort gxologistics
+
+      # Step 6: Commit changes if auto-fixes are applied
+      - name: Commit linting fixes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Apply linting fixes with black and isort"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
