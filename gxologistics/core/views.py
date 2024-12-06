@@ -73,7 +73,7 @@ class RegisterUserView(APIView):
 
         # Generate email verification token
         token = email_verification_token.make_token(user)
-        react_domain = "http://localhost:5173"  # Use environment variables for production
+        react_domain = "https://gxologisticsfrontend.onrender.com"  # Use environment variables for production
         verification_link = f"{react_domain}/email-verify?token={token}&uid={user.id}"
 
         # Send email
@@ -84,7 +84,7 @@ class RegisterUserView(APIView):
             recipient_list=[email],
 )
 
-        react_redirect_url = f"http://localhost:5173/email-verify?token={token}&uid={user.id}"
+        react_redirect_url = f"https://gxologisticsfrontend.onrender.com/email-verify?token={token}&uid={user.id}"
         return JsonResponse({"redirect_url": react_redirect_url}, status=status.HTTP_201_CREATED)
     
 class VerifyEmailView(APIView):
