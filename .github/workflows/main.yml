@@ -26,7 +26,6 @@ jobs:
       # Step 3: Install dependencies
       - name: Install dependencies
         env:
-          PYTHONPATH: ${{ github.workspace }}/gxologistics
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           DEBUG: ${{ secrets.DEBUG }}
           ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
@@ -52,7 +51,6 @@ jobs:
       # Step 4: Run tests
       - name: Run tests
         env:
-          PYTHONPATH: ${{ github.workspace }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           DEBUG: ${{ secrets.DEBUG }}
           ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
