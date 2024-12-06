@@ -107,19 +107,15 @@ WSGI_APPLICATION = "gxologistics.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 
+import dj_database_url
+from decouple import config
+
+import os
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_NAME"),
-        "USER": os.environ.get("DB_USER"),
-        "PASSWORD": os.environ.get("DB_PASSWORD"),
-        "HOST": os.environ.get("DB_HOST"),
-        "PORT": os.environ.get("DB_PORT", 5432),  # Default to 5432 if DB_PORT is not set
-        "CONN_MAX_AGE": 600,  # Keep connections alive for 10 minutes
-        "OPTIONS": {
-            "sslmode": "require",  # Use SSL in production
-        },
-    }
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL')
+    )
 }
 
 
