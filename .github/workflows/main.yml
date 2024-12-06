@@ -88,10 +88,6 @@ jobs:
       # Step 3: Build and push Docker image
       - name: Build and push Docker image
         working-directory: gxologistics
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/gxologistics:latest
-
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/gxologistics:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/gxologistics:latest
