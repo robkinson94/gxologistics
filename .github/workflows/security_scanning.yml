@@ -59,3 +59,5 @@ jobs:
           commit_message: "Fix security vulnerabilities with pip-audit"
           commit_user_name: "github-actions[bot]"
           commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
