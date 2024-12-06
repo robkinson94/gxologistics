@@ -22,6 +22,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils.timezone import now
 from django.db.models import Sum, Count
 from datetime import timedelta
+from django.http import JsonResponse
 
 
 class RegisterUserView(APIView):
@@ -72,8 +73,8 @@ class RegisterUserView(APIView):
 
         # Generate email verification token
         token = email_verification_token.make_token(user)
-        current_site = get_current_site(request)
-        verification_link = f"http://{current_site.domain}{reverse('email-verify')}?token={token}&uid={user.id}"
+        react_domain = "http://localhost:5173"  # Use environment variables for production
+        verification_link = f"{react_domain}/email-verify?token={token}&uid={user.id}"
 
         # Send email
         send_mail(
@@ -81,15 +82,15 @@ class RegisterUserView(APIView):
             message=f"Click the link to verify your email: {verification_link}",
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[email],
-        )
+)
 
-        return Response({"message": "User registered successfully! Please check your email to verify your account."}, status=status.HTTP_201_CREATED)
+        react_redirect_url = f"http://localhost:5173/email-verify?token={token}&uid={user.id}"
+        return JsonResponse({"redirect_url": react_redirect_url}, status=status.HTTP_201_CREATED)
     
-
 class VerifyEmailView(APIView):
-    def get(self, request):
-        token = request.query_params.get('token')
-        uid = request.query_params.get('uid')
+    def post(self, request):
+        token = request.data.get('token')
+        uid = request.data.get('uid')
 
         user = get_object_or_404(CustomUser, id=uid)
 
@@ -100,6 +101,7 @@ class VerifyEmailView(APIView):
             return Response({"message": "Email verified successfully!"}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class IsCustomAdminUser(BasePermission):
