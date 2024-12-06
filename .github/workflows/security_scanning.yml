@@ -23,17 +23,39 @@ jobs:
         with:
           python-version: "3.10"
 
-      # Step 3: Install pip-audit and Bandit
+      # Step 3: Upgrade pip and enforce setuptools version
+      - name: Upgrade pip and setuptools
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools==75.6.0
+
+      # Step 4: Install pip-audit and Bandit
       - name: Install security tools
         run: |
           pip install pip-audit bandit
 
-      # Step 4: Audit Python dependencies
+      # Step 5: Audit Python dependencies
       - name: Run pip-audit
         working-directory: gxologistics
-        run: pip-audit
+        run: |
+          pip-audit --fix
 
-      # Step 5: Static code analysis for security
+      # Step 6: Static code analysis for security
       - name: Run Bandit
         working-directory: gxologistics
-        run: bandit -r .
+        run: |
+          bandit -r .
+
+      # Step 7: Ensure dependency consistency
+      - name: Freeze updated dependencies
+        working-directory: gxologistics
+        run: |
+          pip freeze > requirements.txt
+
+      # Step 8: Commit updated requirements.txt if changes are made
+      - name: Commit changes to requirements.txt
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Fix security vulnerabilities with pip-audit"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
