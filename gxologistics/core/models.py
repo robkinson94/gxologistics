@@ -5,14 +5,14 @@ class CustomUser(AbstractUser):
     is_admin = models.BooleanField(default=False)
 
 class Team(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     description = models.TextField()
 
     def __str__(self):
         return self.name
 
 class Metric(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     description = models.TextField()  # Ensure this matches the list_display field
     target = models.FloatField()  # Ensure this matches the list_display field
 

@@ -23,6 +23,7 @@ from django.utils.timezone import now
 from django.db.models import Sum, Count
 from datetime import timedelta
 from django.http import JsonResponse
+from django.db import IntegrityError
 
 
 class RegisterUserView(APIView):
@@ -129,8 +130,11 @@ class TeamCRUDView(APIView):
         """
         serializer = TeamSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            try:
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except IntegrityError:
+                raise ValidationError({"name": "A team with this name already exists."})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, pk=None):
@@ -194,8 +198,11 @@ class MetricCRUDView(APIView):
         """
         serializer = MetricSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            try:
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except IntegrityError:
+                    raise ValidationError({"name": "A metric with this name already exists."})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, pk=None):
