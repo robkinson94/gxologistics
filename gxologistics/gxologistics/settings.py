@@ -29,7 +29,10 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'gxologistics-metrics-tracker.onrender.com']
-CORS_ALLOWED_ORIGINS = ['http://localhost:5173', 'gxologisticsfrontend.onrender.com']
+CORS_ALLOWED_ORIGINS = [
+    "https://gxologisticsfrontend.onrender.com",  # Frontend URL
+    "http://localhost:5173",  # Local development URL
+]
 
 # Application definition
 
