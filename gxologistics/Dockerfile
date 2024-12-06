@@ -21,4 +21,4 @@ COPY . /app/
 EXPOSE 8000
 
 # 8. Command to run when the container starts
-CMD ["gunicorn", "gxologistics.wsgi:application", "--bind", "0.0.0.0:${PORT:-8000}"]
+CMD ["gunicorn", "gxologistics.wsgi:application", "--bind", "0.0.0.0:8000"]
