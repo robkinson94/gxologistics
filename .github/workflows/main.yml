@@ -91,6 +91,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: gxologistics
+          file: gxologistics/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/gxologistics:latest
+
