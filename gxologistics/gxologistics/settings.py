@@ -1,28 +1,26 @@
 from datetime import timedelta
 from pathlib import Path
-
-from decouple import config
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY", "default-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("DEBUG", default=False, cast=bool)
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="").split(",")
-CORS_ALLOWED_ORIGINS = config("CORS_ALLOWED_ORIGINS", default="").split(",")
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
+CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
 
 # React Domain and Paths
-REACT_DOMAIN = config("REACT_DOMAIN")
-REACT_VERIFY_PATH = config("REACT_VERIFY_PATH")
-REACT_REDIRECT_PATH = config("REACT_REDIRECT_PATH")
+REACT_DOMAIN = os.environ.get("REACT_DOMAIN", "http://localhost:3000")
+REACT_VERIFY_PATH = os.environ.get("REACT_VERIFY_PATH", "/verify")
+REACT_REDIRECT_PATH = os.environ.get("REACT_REDIRECT_PATH", "/redirect")
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
@@ -61,31 +59,29 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(
-        minutes=config("ACCESS_TOKEN_LIFETIME_MINUTES", default=15, cast=int)
+        minutes=int(os.environ.get("ACCESS_TOKEN_LIFETIME_MINUTES", 15))
     ),
     "REFRESH_TOKEN_LIFETIME": timedelta(
-        days=config("REFRESH_TOKEN_LIFETIME_DAYS", default=7, cast=int)
+        days=int(os.environ.get("REFRESH_TOKEN_LIFETIME_DAYS", 7))
     ),
-    "ROTATE_REFRESH_TOKENS": config("ROTATE_REFRESH_TOKENS", default=True, cast=bool),
-    "BLACKLIST_AFTER_ROTATION": config(
-        "BLACKLIST_AFTER_ROTATION", default=True, cast=bool
-    ),
-    "SIGNING_KEY": config(
-        "JWT_SIGNING_KEY", default=SECRET_KEY
+    "ROTATE_REFRESH_TOKENS": os.environ.get("ROTATE_REFRESH_TOKENS", "True") == "True",
+    "BLACKLIST_AFTER_ROTATION": os.environ.get(
+        "BLACKLIST_AFTER_ROTATION", "True"
+    ) == "True",
+    "SIGNING_KEY": os.environ.get(
+        "JWT_SIGNING_KEY", SECRET_KEY
     ),  # Use SECRET_KEY if not provided
-    "UPDATE_LAST_LOGIN": config("UPDATE_LAST_LOGIN", default=True, cast=bool),
+    "UPDATE_LAST_LOGIN": os.environ.get("UPDATE_LAST_LOGIN", "True") == "True",
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = config("EMAIL_HOST", default="localhost")
-EMAIL_PORT = config("EMAIL_PORT", default=587, cast=int)
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "localhost")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
-
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "webmaster@localhost")
 
 ROOT_URLCONF = "gxologistics.urls"
 
@@ -107,21 +103,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "gxologistics.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT'),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("DB_NAME"),
+        "USER": os.environ.get("DB_USER"),
+        "PASSWORD": os.environ.get("DB_PASSWORD"),
+        "HOST": os.environ.get("DB_HOST"),
+        "PORT": os.environ.get("DB_PORT", 5432),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -144,7 +138,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -156,17 +149,14 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "/static/"  # This is the URL prefix for static files
 STATIC_ROOT = BASE_DIR / "staticfiles"  # This is where static files are collected
 
-
 MEDIA_URL = "/media/"  # URL prefix for media files
 MEDIA_ROOT = BASE_DIR / "mediafiles"  # Directory for uploaded files
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
