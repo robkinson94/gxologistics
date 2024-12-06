@@ -17,11 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 6. Copy the rest of your application code into the container
 COPY . /app/
 
-# 7. Collect static files
-RUN python manage.py collectstatic --noinput
-
-# 8. Expose the port your application runs on
+# 7. Expose the port your application runs on
 EXPOSE 8000
 
-# 9. Command to run when the container starts
+# 8. Command to run when the container starts
 CMD ["gunicorn", "gxologistics.wsgi:application", "--bind", "0.0.0.0:8000"]
