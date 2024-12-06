@@ -43,7 +43,7 @@ jobs:
           EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
           EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
           EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
-        working-directory: .
+        working-directory: gxologistics
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
@@ -68,7 +68,7 @@ jobs:
           EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
           EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
           EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
-        working-directory: .
+        working-directory: gxologistics
         run: python manage.py test
 
   docker:
