@@ -84,7 +84,7 @@ class RegisterUserView(APIView):
             recipient_list=[email],
 )
 
-        react_redirect_url = f"https://gxologisticsfrontend.onrender.com/email-verify?token={token}&uid={user.id}"
+        react_redirect_url = f"https://gxologisticsfrontend.onrender.com/api/email-verify?token={token}&uid={user.id}"
         return JsonResponse({"redirect_url": react_redirect_url}, status=status.HTTP_201_CREATED)
     
 class VerifyEmailView(APIView):
