@@ -1,0 +1,39 @@
+name: Security Scanning
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      # Step 3: Install pip-audit and Bandit
+      - name: Install security tools
+        run: |
+          pip install pip-audit bandit
+
+      # Step 4: Audit Python dependencies
+      - name: Run pip-audit
+        working-directory: gxologistics
+        run: pip-audit
+
+      # Step 5: Static code analysis for security
+      - name: Run Bandit
+        working-directory: gxologistics
+        run: bandit -r .
