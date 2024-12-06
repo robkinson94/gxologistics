@@ -24,6 +24,7 @@ from django.db.models import Sum, Count
 from datetime import timedelta
 from django.http import JsonResponse
 from django.db import IntegrityError
+from decouple import config
 
 
 class RegisterUserView(APIView):
