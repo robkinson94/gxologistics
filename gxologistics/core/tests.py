@@ -71,15 +71,17 @@ class TeamCRUDViewTestCase(APITestCase):
         self.client.force_authenticate(user=self.admin_user)
 
     def test_create_team_success(self):
-        url = reverse("team-list-create")
-        data = {"name": "Team Alpha"}
+        url = reverse("team-list-create")  # Correct URL
+        data = {"name": "Team Alpha"}  # Add other required fields if necessary
         response = self.client.post(url, data)
+        print("Response Data for Success:", response.data)  # Debug response
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Team.objects.filter(name="Team Alpha").exists())
 
     def test_create_team_unauthorized(self):
-        self.client.logout()
-        url = reverse("team-list-create")
+        self.client.logout()  # Ensure user is logged out
+        url = reverse("team-list-create")  # Correct URL
         data = {"name": "Team Alpha"}
         response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        print("Response Data for Unauthorized:", response.data)  # Debug response
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)  # Should return 403
