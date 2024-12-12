@@ -79,7 +79,7 @@ class TeamCRUDViewTestCase(APITestCase):
 
     def test_create_team_unauthorized(self):
         self.client.logout()
-        url = reverse("team_crud")
+        url = reverse("team-list-create")
         data = {"name": "Team Alpha"}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
