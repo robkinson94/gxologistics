@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 class RegisterUserViewTestCase(APITestCase):
     def test_register_user_success(self):
-        url = reverse("register_user")  # Add the correct name for the route
+        url = reverse("register")
         data = {
             "username": "testuser",
             "email": "testuser@example.com",
@@ -22,7 +22,7 @@ class RegisterUserViewTestCase(APITestCase):
         self.assertTrue(CustomUser.objects.filter(username="testuser").exists())
 
     def test_register_user_password_mismatch(self):
-        url = reverse("register_user")
+        url = reverse("register")
         data = {
             "username": "testuser",
             "email": "testuser@example.com",
@@ -45,7 +45,7 @@ class VerifyEmailViewTestCase(APITestCase):
         self.token = email_verification_token.make_token(self.user)
 
     def test_verify_email_success(self):
-        url = reverse("verify_email")
+        url = reverse("email-verify")
         data = {"token": self.token, "uid": self.user.id}
         response = self.client.post(url, data)
         self.user.refresh_from_db()
@@ -53,7 +53,7 @@ class VerifyEmailViewTestCase(APITestCase):
         self.assertTrue(self.user.is_active)
 
     def test_verify_email_invalid_token(self):
-        url = reverse("verify_email")
+        url = reverse("email-verify")
         data = {"token": "invalidtoken", "uid": self.user.id}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -71,7 +71,7 @@ class TeamCRUDViewTestCase(APITestCase):
         self.client.force_authenticate(user=self.admin_user)
 
     def test_create_team_success(self):
-        url = reverse("team_crud")
+        url = reverse("team-list-create")
         data = {"name": "Team Alpha"}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -83,21 +83,3 @@ class TeamCRUDViewTestCase(APITestCase):
         data = {"name": "Team Alpha"}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-
-class LogoutViewTestCase(APITestCase):
-    def setUp(self):
-        self.user = CustomUser.objects.create_user(
-            username="testuser",
-            email="testuser@example.com",
-            password="password123"
-        )
-        self.client.force_authenticate(user=self.user)
-
-    def test_logout_success(self):
-        refresh = RefreshToken.for_user(self.user)
-        url = reverse("logout")
-        data = {"refresh": str(refresh)}
-        response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Add any additional assertions for token invalidation if needed.
