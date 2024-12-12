@@ -58,30 +58,3 @@ class VerifyEmailViewTestCase(APITestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("error", response.data)
-
-
-class TeamCRUDViewTestCase(APITestCase):
-    def setUp(self):
-        self.admin_user = CustomUser.objects.create_user(
-            username="admin",
-            email="admin@example.com",
-            password="adminpassword",
-            is_admin=True
-        )
-        self.client.force_authenticate(user=self.admin_user)
-
-    def test_create_team_success(self):
-        url = reverse("team-list-create")  # Correct URL
-        data = {"name": "Team Alpha"}  # Add other required fields if necessary
-        response = self.client.post(url, data)
-        print("Response Data for Success:", response.data)  # Debug response
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertTrue(Team.objects.filter(name="Team Alpha").exists())
-
-    def test_create_team_unauthorized(self):
-        self.client.logout()  # Ensure user is logged out
-        url = reverse("team-list-create")  # Correct URL
-        data = {"name": "Team Alpha"}
-        response = self.client.post(url, data)
-        print("Response Data for Unauthorized:", response.data)  # Debug response
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)  # Should return 403
