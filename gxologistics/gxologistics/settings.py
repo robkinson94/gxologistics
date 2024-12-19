@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "core",
+    "csp",
 ]
 
 MIDDLEWARE = [
@@ -58,12 +59,14 @@ MIDDLEWARE = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'user_auth.authentication.CookieJWTAuthentication',
+        'core.authentication.CookieJWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
+
+ROOT_URLCONF = "gxologistics.urls"
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(
