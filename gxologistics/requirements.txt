@@ -12,4 +12,3 @@ Pillow
 psycopg2-binary
 pytz
 whitenoise
-django_csp==3.8
