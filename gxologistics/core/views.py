@@ -126,6 +126,18 @@ class CookieTokenRefreshView(TokenRefreshView):
             print("CookieTokenRefreshView: refresh failed or no tokens in response")
 
         return super().finalize_response(request, response, *args, **kwargs)
+    
+
+
+class SelfView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        print("SelfView.get: user =", request.user)
+        return Response({
+            "username": request.user.username,
+            "email": request.user.email,
+        })
 
 
 @api_view(['POST'])
