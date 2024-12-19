@@ -26,6 +26,9 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Application definition
 
+USERNAME_FIELD = 'email'
+
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
