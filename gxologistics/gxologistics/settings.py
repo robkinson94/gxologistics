@@ -14,8 +14,13 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "default-secret-key")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
+CORS_ALLOW_CREDENTIALS = True
+
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
 CORS_ALLOWED_ORIGINS = ['https://gxologisticsfrontend.onrender.com']
+CSRF_TRUSTED_ORIGINS = [
+    "https://gxologisticsfrontend.onrender.com",
+]
 
 # React Domain and Paths
 REACT_DOMAIN = os.environ.get("REACT_DOMAIN", "http://localhost:3000")
