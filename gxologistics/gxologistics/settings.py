@@ -52,9 +52,12 @@ MIDDLEWARE = [
 ]
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'user_auth.authentication.CookieJWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
 }
 
 SIMPLE_JWT = {
@@ -74,6 +77,23 @@ SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": os.environ.get("UPDATE_LAST_LOGIN", "True") == "True",
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'Strict'
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = 'Strict'
+
+SECURE_SSL_REDIRECT = True # Change when in render
+X_FRAME_OPTIONS = 'DENY'
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'", 'fonts.googleapis.com')
+CSP_SCRIPT_SRC = ("'self'", 'cdn.jsdelivr.net')
+
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "localhost")
@@ -109,8 +129,6 @@ WSGI_APPLICATION = "gxologistics.wsgi.application"
 
 import dj_database_url
 from decouple import config
-
-import os
 
 DATABASES = {
     'default': dj_database_url.config(
@@ -166,3 +184,23 @@ MEDIA_ROOT = BASE_DIR / "mediafiles"  # Directory for uploaded files
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "core.CustomUser"
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'errors.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}

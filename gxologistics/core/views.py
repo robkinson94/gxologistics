@@ -18,11 +18,133 @@ from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .models import CustomUser, Metric, Record, Team
 from .serializers import MetricSerializer, RecordSerializer, TeamSerializer
 from .utils import email_verification_token
+from django.views.decorators.csrf import ensure_csrf_cookie
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes
 
+
+class CookieTokenObtainPairView(TokenObtainPairView):
+    """
+    Overrides the default token obtain pair to store tokens in HttpOnly cookies.
+    """
+    def finalize_response(self, request, response, *args, **kwargs):
+        # Debug: Print the response code and data
+        print("CookieTokenObtainPairView.finalize_response: status =", response.status_code, "data =", response.data)
+        # or logger.debug(...) if you're using logging
+
+        if response.status_code == status.HTTP_200_OK and 'access' in response.data:
+            access_token = response.data['access']
+            refresh_token = response.data['refresh']
+
+            print("CookieTokenObtainPairView: obtained tokens:", access_token, refresh_token)
+
+            # Remove tokens from response body
+            del response.data['access']
+            del response.data['refresh']
+
+            # Set cookies
+            response.set_cookie(
+                'access_token',
+                access_token,
+                httponly=True,
+                secure=True,
+                samesite='Strict',
+                max_age=15 * 60  # 15 minutes
+            )
+            response.set_cookie(
+                'refresh_token',
+                refresh_token,
+                httponly=True,
+                secure=True,
+                samesite='Strict',
+                max_age=24 * 60 * 60  # 1 day
+            )
+        else:
+            print("CookieTokenObtainPairView: no valid tokens or request failed")
+
+        return super().finalize_response(request, response, *args, **kwargs)
+
+
+class CookieTokenRefreshView(TokenRefreshView):
+    """
+    A custom refresh view that reads the refresh token from an HttpOnly cookie
+    AND sets new tokens as HttpOnly cookies in the response.
+    """
+
+    def get_serializer(self, *args, **kwargs):
+        """
+        Override get_serializer to inject the 'refresh' token from cookies 
+        into the serializer data if it's not provided in the request body.
+        """
+        if "data" not in kwargs:
+            kwargs["data"] = {}
+
+        # If the 'refresh' field isn't in the request body, grab from cookie
+        if "refresh" not in kwargs["data"]:
+            refresh_cookie = self.request.COOKIES.get('refresh_token')
+            if refresh_cookie:
+                kwargs["data"]["refresh"] = refresh_cookie
+        
+        return super().get_serializer(*args, **kwargs)
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        print("CookieTokenRefreshView.finalize_response: status =", response.status_code, "data =", response.data)
+
+        if response.status_code == status.HTTP_200_OK and 'access' in response.data:
+            # Access token present, store in cookie
+            access_token = response.data['access']
+            print("CookieTokenRefreshView: new access token:", access_token)
+            del response.data['access']
+
+            response.set_cookie(
+                'access_token',
+                access_token,
+                httponly=True,
+                secure=True,
+                samesite='Strict',
+                max_age=15 * 60  # 15 minutes
+            )
+
+            # If refresh token rotated, also update the cookie
+            if 'refresh' in response.data:
+                refresh_token = response.data['refresh']
+                print("CookieTokenRefreshView: new refresh token:", refresh_token)
+                del response.data['refresh']
+                response.set_cookie(
+                    'refresh_token',
+                    refresh_token,
+                    httponly=True,
+                    secure=True,
+                    samesite='Strict',
+                    max_age=24 * 60 * 60  # 1 day
+                )
+        else:
+            print("CookieTokenRefreshView: refresh failed or no tokens in response")
+
+        return super().finalize_response(request, response, *args, **kwargs)
+
+
+@api_view(['POST'])
+def logout_view(request):
+    """
+    Clears the JWT cookies.
+    """
+    print("logout_view: Logging out user =", request.user)
+    response = Response({"detail": "Logged out."}, status=status.HTTP_200_OK)
+    response.delete_cookie('access_token')
+    response.delete_cookie('refresh_token')
+    return response
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])  # <-- This ensures no authentication is required
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    return Response({"detail": "CSRF cookie set."}, status=status.HTTP_200_OK)
 
 class RegisterUserView(APIView):
     def post(self, request):
